@@ -1,0 +1,131 @@
+---
+- hosts: nodes
+  tasks:
+   - name: Run the equivalent of apt-get update as a separate step
+     apt:
+       update_cache: yes
+
+   - name: Install list of packages
+     apt: name={{item}} state=present
+     with_items:
+          - gcc
+          - git
+          - git-core
+          - default-jre
+          - default-jdk
+          - openjdk-7-jre
+          - openjdk-7-jdk
+          - maven
+
+   - name: get jenkins files
+     shell: wget -q -O - https://pkg.jenkins.io/debian/jenkins-ci.org.key | sudo apt-key add -
+
+   - name: setup files for jenkins
+     shell: sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+   - name: Run the equivalent of apt-get update as a separate step
+     apt:
+       update_cache: yes
+
+   - name: install jenkins
+     apt: name="jenkins" state=present
+
+   - name: clone git repo
+     git: repo=https://github.com/CSC-326/JSPDemo.git dest=/home/vagrant/JSPDemo
+
+   - copy:
+       src: /home/vagrant/jconfig.xml
+       dest: /var/lib/jenkins/config.xml
+       owner: jenkins
+       group: jenkins
+       mode: 0777
+
+   - copy:
+       src: /home/vagrant/jobconfig.xml
+       dest: /home/vagrant/demoJob.xml
+       owner: jenkins
+       group: jenkins
+       mode: 0777
+
+   - name: Download jenkins cli jar
+     shell: wget http://jenkins/jnlpJars/jenkins-cli.jar
+
+
+   - name: restart/start jenkins
+     shell: service jenkins restart
+
+   - wait_for:
+       host: 192.168.33.100
+       port: 8080
+       delay: 45
+
+   - name: create jenkins job
+     shell: sudo java -jar /home/vagrant/jenkins-cli.jar -s http://192.168.33.100:8080/ create-job sampleJob3 < /home/vagrant/demoJob.xml
+
+   - name: run job
+     shell: java -jar /home/vagrant/jenkins-cli.jar -s http://192.168.33.100:8080/ build sampleJob3
+                                                                                                                                                          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
